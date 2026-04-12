@@ -52,11 +52,16 @@ if (MODE == "assembled") {
 // Both guides are centred on the Y axis of the guide() primitive, so we shift
 // each by +GUIDE_LENGTH/2 so guide1 sits at Y 0..GUIDE_LENGTH and guide2 sits
 // at the far end of the rod span.
+//
+// Rod tips are on opposite ends of the assembled tool, both bevelled toward the
+// shared centreline (Z = guide_height/2 = 14.5 mm):
+//   bottom rod - taper at NEAR end, tip points UP   to centreline
+//   top    rod - taper at FAR  end, tip points DOWN to centreline
 
 module assembled() {
-    // Z floor of the rod stack inside guide1 (opening centre = guide_height/2)
-    rod_lo_z = guide_height/2 - STOCK_THICKNESS;  // 14.5 - 9.5 = 5 mm
-    rod_hi_z = guide_height/2;                     // 14.5 mm - top of bottom rod
+    // Z extents of the two stacked rods inside the guide opening
+    rod_lo_z = guide_height/2 - STOCK_THICKNESS;  // 5 mm   - floor of bottom rod
+    rod_hi_z = guide_height/2;                     // 14.5 mm - centreline
 
     guide_span = ROD_PREVIEW_LENGTH - GUIDE_LENGTH;
 
@@ -68,15 +73,48 @@ module assembled() {
     translate([0, GUIDE_LENGTH/2 + guide_span, 0])
         guide2_body();
 
-    // Bottom rod - slightly longer, sticks out past each guide
+    // Bottom rod: tip at near end (Y = -25), taper points up to centreline
     color("SaddleBrown", 0.85)
-    translate([-STOCK_WIDTH/2, -25, rod_lo_z])
-        cube([STOCK_WIDTH, ROD_PREVIEW_LENGTH + 50, STOCK_THICKNESS]);
+    translate([0, -25, rod_lo_z])
+        rod_stick(ROD_PREVIEW_LENGTH + 50, taper_at_start=true);
 
-    // Top rod - offset so the sliding overlap is visible
+    // Top rod: tip at far end, taper points down to centreline
+    // Offset in Y slightly so the sliding overlap region is visible
     color("BurlyWood", 0.85)
-    translate([-STOCK_WIDTH/2, 15, rod_hi_z])
-        cube([STOCK_WIDTH, ROD_PREVIEW_LENGTH + 15, STOCK_THICKNESS]);
+    translate([0, 15, rod_hi_z])
+        rod_stick(ROD_PREVIEW_LENGTH + 15, taper_at_start=false);
+}
+
+// Single pinch rod stick with a 45-degree chisel taper at one end.
+// Rod runs Y=0 to Y=length, centred on X=0, Z=0 to Z=STOCK_THICKNESS.
+//   taper_at_start=true  : tip at Y=0,      knife-edge at Z=STOCK_THICKNESS (up)
+//   taper_at_start=false : tip at Y=length,  knife-edge at Z=0              (down)
+// 45 degrees => taper run = STOCK_THICKNESS.
+module rod_stick(length, taper_at_start=true) {
+    taper_len = STOCK_THICKNESS; // run = rise for 45 deg
+
+    // Straight section
+    translate([-STOCK_WIDTH/2, taper_at_start ? taper_len : 0, 0])
+        cube([STOCK_WIDTH, length - taper_len, STOCK_THICKNESS]);
+
+    // Tapered section - convex hull of tip line and full cross-section slab
+    if (taper_at_start) {
+        // Tip at Y=0, knife-edge at top face - points up toward centreline
+        hull() {
+            translate([-STOCK_WIDTH/2, 0,          STOCK_THICKNESS - 0.01])
+                cube([STOCK_WIDTH, 0.01, 0.01]);
+            translate([-STOCK_WIDTH/2, taper_len,  0])
+                cube([STOCK_WIDTH, 0.01, STOCK_THICKNESS]);
+        }
+    } else {
+        // Tip at Y=length, knife-edge at bottom face - points down toward centreline
+        hull() {
+            translate([-STOCK_WIDTH/2, length - 0.01,      0])
+                cube([STOCK_WIDTH, 0.01, 0.01]);
+            translate([-STOCK_WIDTH/2, length - taper_len, 0])
+                cube([STOCK_WIDTH, 0.01, STOCK_THICKNESS]);
+        }
+    }
 }
 
 
@@ -157,4 +195,4 @@ module guide(out_width, out_length, out_height, in_width, in_length, in_height) 
 // TODO Add thread to knob
 // TODO Add bolt thread to guide2 for adjuster
 // TODO Add chamfered screw hole to guide1 & guide2 for securing to stock
-// TODO Pointed / bevelled rod ends (~60 deg bevel per Crucible / 2025 design)
+// TODO Pointed / bevelled rod ends on the actual printable rod parts (current taper is preview only)
