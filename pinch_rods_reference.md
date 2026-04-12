@@ -73,4 +73,6 @@ They are also used to transfer interior dimensions directly to a workpiece witho
 - A small standoff or boss to house the threaded insert improves thread engagement
 - Chamfered screw holes in the guide base allow screwing the guide to the stock if desired
 - Print in orientation that puts layer lines along the length of the guide for strength
-- Rod cross-section in current SCAD: 19mm x 19mm (3/4" square stock)
+- Rod cross-section in current SCAD: 19mm wide x 9.5mm tall per rod (approx 3/4" x 3/8")
+- Two rods stack vertically inside the guide, so the guide opening is 19mm x 19mm total
+- `STOCK_THICKNESS = 19/2` in the code reflects this - it is the thickness of one rod, not both
