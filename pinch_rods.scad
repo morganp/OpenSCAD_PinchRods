@@ -35,7 +35,7 @@ stand_off_height = 5;
 KNOB_THREAD_LEN  = 12;
 
 // Length of each rod stick shown in assembled preview
-ROD_PREVIEW_LENGTH = 350;
+ROD_PREVIEW_LENGTH = 200;
 
 
 // ── Top-level dispatcher ──────────────────────────────────────────────────────
@@ -73,8 +73,16 @@ module assembled() {
             guide1_body();
 
     // Guide 2 far end
-    translate([0, GUIDE_LENGTH/2 + guide_span, 0])
+    g2_y = GUIDE_LENGTH/2 + guide_span;
+    translate([0, g2_y, 0])
         guide2_body();
+
+    // Fastener seated in guide2 standoff, thread pointing down into the hole.
+    // anchor=BOTTOM so Z=0 is the screw tip; knob sits KNOB_THREAD_LEN above.
+    // Standoff top = guide_height+2+stand_off_height = 36 mm.
+    // Tip at Z=28 gives 8 mm of thread engagement; knob clears standoff by 4 mm.
+    translate([0, g2_y, (guide_height + 2 + stand_off_height) - KNOB_THREAD_LEN + 4])
+        fastner();
 
     // Bottom rod: tip at near end, taper points up to centreline
     // Starts 25 mm before guide1's near face (Y=0) so it is visible on both sides.
