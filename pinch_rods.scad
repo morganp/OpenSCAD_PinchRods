@@ -65,9 +65,12 @@ module assembled() {
 
     guide_span = ROD_PREVIEW_LENGTH - GUIDE_LENGTH;
 
-    // Guide 1 near end
-    translate([0, GUIDE_LENGTH/2, 0])
-        guide1_body();
+    // Guide 1 near end - inverted so its screw hole is at the TOP and secures the TOP rod.
+    // Rotate 180 around X (flips Z and Y), then translate back up by guide_height so the
+    // opening stays at Z 5..24 (symmetric around guide_height/2) and the rods still pass through.
+    translate([0, GUIDE_LENGTH/2, guide_height])
+        rotate([180, 0, 0])
+            guide1_body();
 
     // Guide 2 far end
     translate([0, GUIDE_LENGTH/2 + guide_span, 0])
