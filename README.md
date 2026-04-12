@@ -46,7 +46,7 @@ Open `pinch_rods.scad` in OpenSCAD and set the two variables at the top:
 MODE = "assembled";
 
 // Which part to export when MODE = "print":
-// "fastner"  "guide1"  "guide2"
+// "fastener"  "guide1"  "guide2"
 PRINT_PART = "guide2";
 ```
 
@@ -56,7 +56,7 @@ Three parts are printed separately. Export each as a `.3mf` by setting `MODE = "
 
 | Guide 1 | Guide 2 | Thumbscrew knob |
 |---|---|---|
-| ![Guide 1](images/part_guide1.png) | ![Guide 2](images/part_guide2.png) | ![Fastener](images/part_fastner.png) |
+| ![Guide 1](images/part_guide1.png) | ![Guide 2](images/part_guide2.png) | ![Fastener](images/part_fastener.png) |
 
 > **Note:** Guide 1 is printed in its natural orientation (flat bottom on the bed) and flipped upside down when assembling.
 

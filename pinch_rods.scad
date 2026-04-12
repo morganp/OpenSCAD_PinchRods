@@ -12,7 +12,7 @@ include <BOSL2/screws.scad>
 MODE = "assembled";
 
 // Which part to show when MODE = "print"
-//   "fastner"  "guide1"  "guide2"
+//   "fastener"  "guide1"  "guide2"
 PRINT_PART = "guide2";
 
 
@@ -42,7 +42,7 @@ ROD_PREVIEW_LENGTH = 200;
 if (MODE == "assembled") {
     assembled();
 } else {
-    if      (PRINT_PART == "fastner") fastner();
+    if      (PRINT_PART == "fastener") fastener();
     else if (PRINT_PART == "guide1")  guide1();
     else if (PRINT_PART == "guide2")  guide2();
 }
@@ -82,7 +82,7 @@ module assembled() {
     // Standoff top = guide_height+2+stand_off_height = 36 mm.
     // Tip at Z=28 gives 8 mm of thread engagement; knob clears standoff by 4 mm.
     translate([0, g2_y, (guide_height + 2 + stand_off_height) - KNOB_THREAD_LEN + 4])
-        fastner();
+        fastener();
 
     // Bottom rod: tip at near end, taper points up to centreline
     // Starts 25 mm before guide1's near face (Y=0) so it is visible on both sides.
@@ -171,7 +171,7 @@ module guide2_body() {
 // ── Individual part modules (print mode) ──────────────────────────────────────
 
 // Slider knob / fastener
-module fastner() {
+module fastener() {
     union() {
         screw(spec="M5", length=KNOB_THREAD_LEN+1, thread=true, anchor=BOTTOM);
         translate([0, 0, KNOB_THREAD_LEN])
