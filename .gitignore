@@ -1,0 +1,5 @@
+# 3MF export files
+*.3mf
+
+# macOS
+.DS_Store
