@@ -35,7 +35,7 @@ stand_off_height = 5;
 KNOB_THREAD_LEN  = 12;
 
 // Length of each rod stick shown in assembled preview
-ROD_PREVIEW_LENGTH = 250;
+ROD_PREVIEW_LENGTH = 350;
 
 
 // ── Top-level dispatcher ──────────────────────────────────────────────────────
@@ -76,16 +76,17 @@ module assembled() {
     translate([0, GUIDE_LENGTH/2 + guide_span, 0])
         guide2_body();
 
-    // Bottom rod: tip at near end (Y = -25), taper points up to centreline
+    // Bottom rod: tip at near end, taper points up to centreline
+    // Starts 25 mm before guide1's near face (Y=0) so it is visible on both sides.
     color("SaddleBrown", 0.85)
     translate([0, -25, rod_lo_z])
         rod_stick(ROD_PREVIEW_LENGTH + 50, taper_at_start=true);
 
     // Top rod: tip at far end, taper points down to centreline
-    // Offset in Y slightly so the sliding overlap region is visible
+    // Starts 20 mm before guide1's near face so it is also visible on both sides.
     color("BurlyWood", 0.85)
-    translate([0, 15, rod_hi_z])
-        rod_stick(ROD_PREVIEW_LENGTH + 15, taper_at_start=false);
+    translate([0, -20, rod_hi_z])
+        rod_stick(ROD_PREVIEW_LENGTH + 50, taper_at_start=false);
 }
 
 // Single pinch rod stick with a 45-degree chisel taper at one end.
