@@ -3,3 +3,6 @@
 
 # macOS
 .DS_Store
+
+# Generated 3mf exports
+export/
