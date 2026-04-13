@@ -12,7 +12,7 @@ include <BOSL2/screws.scad>
 MODE = "assembled";
 
 // Which part to show when MODE = "print"
-//   "fastener"  "guide1"  "guide2"
+//   "fastener"  "guide1"  "guide2"  "rod"
 PRINT_PART = "guide2";
 
 
@@ -37,6 +37,9 @@ KNOB_THREAD_LEN  = 12;
 // Length of each rod stick shown in assembled preview
 ROD_PREVIEW_LENGTH = 200;
 
+// Length of the printable rod (adjust to suit your workpiece range)
+ROD_PRINT_LENGTH = 300;
+
 
 // ── Top-level dispatcher ──────────────────────────────────────────────────────
 if (MODE == "assembled") {
@@ -45,6 +48,7 @@ if (MODE == "assembled") {
     if      (PRINT_PART == "fastener") fastener();
     else if (PRINT_PART == "guide1")  guide1();
     else if (PRINT_PART == "guide2")  guide2();
+    else if (PRINT_PART == "rod")     rod();
 }
 
 
@@ -191,6 +195,15 @@ module guide2() {
         guide2_body();
 }
 
+// Printable rod - flat on the build plate (Z=0 to Z=STOCK_THICKNESS).
+// Both rods are the same shape; print two and flip one when assembling.
+// The 45-degree taper is at Y=0 with the knife-edge at the top face,
+// which is the most printable orientation (no overhangs on the taper).
+// Adjust ROD_PRINT_LENGTH to suit your workpiece range.
+module rod() {
+    rod_stick(ROD_PRINT_LENGTH, taper_at_start=true);
+}
+
 
 // ── Base guide primitive ──────────────────────────────────────────────────────
 module guide(out_width, out_length, out_height, in_width, in_length, in_height) {
@@ -207,4 +220,4 @@ module guide(out_width, out_length, out_height, in_width, in_length, in_height) 
 // TODO Add thread to knob
 // TODO Add bolt thread to guide2 for adjuster
 // TODO Add chamfered screw hole to guide1 & guide2 for securing to stock
-// TODO Pointed / bevelled rod ends on the actual printable rod parts (current taper is preview only)
+// TODO Add thread to knob so it mates with the M5 screw in guide2
