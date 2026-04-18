@@ -9,7 +9,7 @@ include <BOSL2/screws.scad>
 // ── Display mode ──────────────────────────────────────────────────────────────
 //   "assembled" : both guides + two rod sticks shown in working position
 //   "print"     : single part laid flat for 3mf export (select with PRINT_PART)
-MODE = "assembled";
+MODE = "print";
 
 // Which part to show when MODE = "print"
 //   "fastener"  "guide1"  "guide2"  "rod"
@@ -20,7 +20,15 @@ PRINT_PART = "guide2";
 STOCK_THICKNESS = 19/2;  // height of ONE rod - two stack to fill the opening
 STOCK_WIDTH     = 19;    // width of each rod
 
+// ── Rod print tolerances ──────────────────────────────────────────────────────
+ROD_TOL_SIDE = 0.15;  // removed from each side of width (total 0.2 mm narrower)
+ROD_TOL_TOP  = 0.15;  // removed from top face only (2 rods = 0.2 mm total height)
+
+rod_width     = STOCK_WIDTH     - 2 * ROD_TOL_SIDE;
+rod_thickness = STOCK_THICKNESS - ROD_TOL_TOP;
+
 WALL_THICKNESS  = 5;
+CHAMFER         = 1.0;  // edge chamfer on all guide outer faces (mm)
 
 GUIDE_LENGTH    = 40;
 
@@ -38,7 +46,7 @@ KNOB_THREAD_LEN  = 12;
 ROD_PREVIEW_LENGTH = 200;
 
 // Length of the printable rod (adjust to suit your workpiece range)
-ROD_PRINT_LENGTH = 300;
+ROD_PRINT_LENGTH = 160;
 
 
 // ── Top-level dispatcher ──────────────────────────────────────────────────────
@@ -107,28 +115,28 @@ module assembled() {
 //   taper_at_start=false : tip at Y=length,  knife-edge at Z=0              (down)
 // 45 degrees => taper run = STOCK_THICKNESS.
 module rod_stick(length, taper_at_start=true) {
-    taper_len = STOCK_THICKNESS; // run = rise for 45 deg
+    taper_len = rod_thickness; // run = rise for 45 deg
 
     // Straight section
-    translate([-STOCK_WIDTH/2, taper_at_start ? taper_len : 0, 0])
-        cube([STOCK_WIDTH, length - taper_len, STOCK_THICKNESS]);
+    translate([-rod_width/2, taper_at_start ? taper_len : 0, 0])
+        cube([rod_width, length - taper_len, rod_thickness]);
 
     // Tapered section - convex hull of tip line and full cross-section slab
     if (taper_at_start) {
         // Tip at Y=0, knife-edge at top face - points up toward centreline
         hull() {
-            translate([-STOCK_WIDTH/2, 0,          STOCK_THICKNESS - 0.01])
-                cube([STOCK_WIDTH, 0.01, 0.01]);
-            translate([-STOCK_WIDTH/2, taper_len,  0])
-                cube([STOCK_WIDTH, 0.01, STOCK_THICKNESS]);
+            translate([-rod_width/2, 0,          rod_thickness - 0.01])
+                cube([rod_width, 0.01, 0.01]);
+            translate([-rod_width/2, taper_len,  0])
+                cube([rod_width, 0.01, rod_thickness]);
         }
     } else {
         // Tip at Y=length, knife-edge at bottom face - points down toward centreline
         hull() {
-            translate([-STOCK_WIDTH/2, length - 0.01,      0])
-                cube([STOCK_WIDTH, 0.01, 0.01]);
-            translate([-STOCK_WIDTH/2, length - taper_len, 0])
-                cube([STOCK_WIDTH, 0.01, STOCK_THICKNESS]);
+            translate([-rod_width/2, length - 0.01,      0])
+                cube([rod_width, 0.01, 0.01]);
+            translate([-rod_width/2, length - taper_len, 0])
+                cube([rod_width, 0.01, rod_thickness]);
         }
     }
 }
@@ -156,11 +164,12 @@ module guide2_body() {
 
             // Standoff boss for thumbscrew threads
             translate([0, 0, guide_height_p2])
-                cylinder(h=stand_off_height, d=10, center=false, $fn=64);
+                cyl(h=stand_off_height, d=10, anchor=BOTTOM, chamfer2=CHAMFER);
 
-            // Clamping membrane - 1 mm slab just inside the top opening gap
+            // Clamping membrane - corner-chamfered to match guide body outline
             translate([0, 0, guide_height_p2 - WALL_THICKNESS - 1 - 0.5])
-                cube([guide_width, GUIDE_LENGTH, 1], center=true);
+                linear_extrude(height=1, center=true)
+                    rect([guide_width, GUIDE_LENGTH], chamfer=CHAMFER);
         }
         // Threaded M5 hole down through the standoff
         translate([0, 0, guide_height_p2 + stand_off_height])
@@ -209,8 +218,17 @@ module rod() {
 module guide(out_width, out_length, out_height, in_width, in_length, in_height) {
     translate([0, 0, out_height/2]) {
         difference() {
-            cube([out_width,  out_length,  out_height], center=true);
-            cube([in_width,   in_length,   in_height],  center=true);
+            cuboid([out_width, out_length, out_height], chamfer=CHAMFER);
+            // Main slot channel
+            cube([in_width, in_length, in_height], center=true);
+            // Entry lead-in chamfers at both Y-end faces only
+            for (s = [-1, 1])
+                hull() {
+                    translate([0, s * (out_length/2 - 0.01), 0])
+                        cube([in_width, 0.02, in_height], center=true);
+                    translate([0, s * (out_length/2 - CHAMFER), 0])
+                        cube([in_width + 2*CHAMFER, 0.02, in_height + 2*CHAMFER], center=true);
+                }
         }
     }
 }
